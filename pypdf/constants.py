@@ -89,43 +89,25 @@ class UserAccessPermissions(IntFlag):
     @classmethod
     def _is_reserved(cls, name: str) -> bool:
         """Check if the given name corresponds to a reserved flag entry."""
-        return name.startswith("R") and name[1:].isdigit()
+        pass
 
     @classmethod
     def _is_active(cls, name: str) -> bool:
         """Check if the given reserved name defaults to 1 = active."""
-        return name not in {"R1", "R2"}
+        pass
 
     def to_dict(self) -> dict[str, bool]:
         """Convert the given flag value to a corresponding verbose name mapping."""
-        result: dict[str, bool] = {}
-        for name, flag in UserAccessPermissions.__members__.items():
-            if UserAccessPermissions._is_reserved(name):
-                continue
-            result[name.lower()] = (self & flag) == flag
-        return result
+        pass
 
     @classmethod
     def from_dict(cls, value: dict[str, bool]) -> "UserAccessPermissions":
         """Convert the verbose name mapping to the corresponding flag value."""
-        value_copy = value.copy()
-        result = cls(0)
-        for name, flag in cls.__members__.items():
-            if cls._is_reserved(name):
-                # Reserved names have a required value. Use it.
-                if cls._is_active(name):
-                    result |= flag
-                continue
-            is_active = value_copy.pop(name.lower(), False)
-            if is_active:
-                result |= flag
-        if value_copy:
-            raise ValueError(f"Unknown dictionary keys: {value_copy!r}")
-        return result
+        pass
 
     @classmethod
     def all(cls) -> "UserAccessPermissions":
-        return cls((2**32 - 1) - cls.R1 - cls.R2)
+        pass
 
 
 class Resources:
@@ -455,18 +437,7 @@ class FieldDictionaryAttributes:
             A tuple containing all the attribute constants.
 
         """
-        return (
-            cls.TM,
-            cls.T,
-            cls.FT,
-            cls.Parent,
-            cls.TU,
-            cls.Ff,
-            cls.V,
-            cls.DV,
-            cls.Kids,
-            cls.AA,
-        )
+        pass
 
     @classmethod
     def attributes_dict(cls) -> dict[str, str]:
@@ -483,16 +454,7 @@ class FieldDictionaryAttributes:
             A dictionary containing attribute keys and their names.
 
         """
-        return {
-            cls.FT: "Field Type",
-            cls.Parent: "Parent",
-            cls.T: "Field Name",
-            cls.TU: "Alternate Field Name",
-            cls.TM: "Mapping Name",
-            cls.Ff: "Field Flags",
-            cls.V: "Value",
-            cls.DV: "Default Value",
-        }
+        pass
 
 
 class CheckboxRadioButtonAttributes:
@@ -514,7 +476,7 @@ class CheckboxRadioButtonAttributes:
             A tuple containing all the attribute constants.
 
         """
-        return (cls.Opt,)
+        pass
 
     @classmethod
     def attributes_dict(cls) -> dict[str, str]:
@@ -531,9 +493,7 @@ class CheckboxRadioButtonAttributes:
             A dictionary containing attribute keys and their names.
 
         """
-        return {
-            cls.Opt: "Options",
-        }
+        pass
 
 
 class FieldFlag(IntFlag):

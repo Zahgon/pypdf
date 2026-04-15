@@ -129,10 +129,7 @@ def write_release_msg_file(
 
         git tag -eF RELEASE_TAG_MSG.md && git push
     """
-    with open("RELEASE_TAG_MSG.md", "w") as fp:
-        fp.write(f"Version {new_version}, {today:%Y-%m-%d}\n\n")
-        fp.write("## What's new\n")
-        fp.write(commit_changes)
+    pass
 
 
 def strip_header(md: str) -> str:

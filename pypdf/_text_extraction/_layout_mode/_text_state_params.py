@@ -83,22 +83,15 @@ class TextStateParams:
 
     def font_size_matrix(self) -> list[float]:
         """Font size matrix"""
-        return [
-            self.font_size * (self.Tz / 100.0),
-            0.0,
-            0.0,
-            self.font_size,
-            0.0,
-            self.Ts,
-        ]
+        pass
 
     def displaced_transform(self) -> list[float]:
         """Effective transform matrix after text has been rendered."""
-        return mult(self.displacement_matrix(), self.transform)
+        pass
 
     def render_transform(self) -> list[float]:
         """Effective transform matrix accounting for font size, Tz, and Ts."""
-        return mult(self.font_size_matrix(), self.transform)
+        pass
 
     def displacement_matrix(
         self, word: Union[str, None] = None, td_offset: float = 0.0
@@ -112,24 +105,13 @@ class TextStateParams:
             td_offset (float, optional): translation applied by TD operator. Defaults to 0.0.
 
         """
-        word = word if word is not None else self.txt
-        return [1.0, 0.0, 0.0, 1.0, self.word_tx(word, td_offset), 0.0]
+        pass
 
     def word_tx(self, word: str, td_offset: float = 0.0) -> float:
         """Horizontal text displacement for any word according this text state"""
-        width: float = 0.0
-        for char in word:
-            if char == " ":
-                width += self.font.space_width
-            else:
-                width += self.font.text_width(char)
-        return (
-            (self.font_size * ((width - td_offset) / 1000.0))
-            + self.Tc
-            + word.count(" ") * self.Tw
-        ) * (self.Tz / 100.0)
+        pass
 
     @staticmethod
     def to_dict(inst: "TextStateParams") -> dict[str, Any]:
         """Dataclass to dict for json.dumps serialization"""
-        return {k: getattr(inst, k) for k in inst.__dataclass_fields__ if k != "font"}
+        pass

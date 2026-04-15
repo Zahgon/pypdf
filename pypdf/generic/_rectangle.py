@@ -26,54 +26,45 @@ class RectangleObject(ArrayObject):
         ArrayObject.__init__(self, [self._ensure_is_number(x) for x in arr])
 
     def _ensure_is_number(self, value: Any) -> Union[FloatObject, NumberObject]:
-        if not isinstance(value, (FloatObject, NumberObject)):
-            value = FloatObject(value)
-        return value
+        pass
 
     def scale(self, sx: float, sy: float) -> "RectangleObject":
-        return RectangleObject(
-            (
-                float(self.left) * sx,
-                float(self.bottom) * sy,
-                float(self.right) * sx,
-                float(self.top) * sy,
-            )
-        )
+        pass
 
     def __repr__(self) -> str:
         return f"RectangleObject({list(self)!r})"
 
     @property
     def left(self) -> FloatObject:
-        return self[0]
+        pass
 
     @left.setter
     def left(self, f: float) -> None:
-        self[0] = FloatObject(f)
+        pass
 
     @property
     def bottom(self) -> FloatObject:
-        return self[1]
+        pass
 
     @bottom.setter
     def bottom(self, f: float) -> None:
-        self[1] = FloatObject(f)
+        pass
 
     @property
     def right(self) -> FloatObject:
-        return self[2]
+        pass
 
     @right.setter
     def right(self, f: float) -> None:
-        self[2] = FloatObject(f)
+        pass
 
     @property
     def top(self) -> FloatObject:
-        return self[3]
+        pass
 
     @top.setter
     def top(self, f: float) -> None:
-        self[3] = FloatObject(f)
+        pass
 
     @property
     def lower_left(self) -> tuple[float, float]:
@@ -81,11 +72,11 @@ class RectangleObject(ArrayObject):
         Property to read and modify the lower left coordinate of this box
         in (x,y) form.
         """
-        return self.left, self.bottom
+        pass
 
     @lower_left.setter
     def lower_left(self, value: tuple[float, float]) -> None:
-        self[0], self[1] = (self._ensure_is_number(x) for x in value)
+        pass
 
     @property
     def lower_right(self) -> tuple[float, float]:
@@ -93,11 +84,11 @@ class RectangleObject(ArrayObject):
         Property to read and modify the lower right coordinate of this box
         in (x,y) form.
         """
-        return self.right, self.bottom
+        pass
 
     @lower_right.setter
     def lower_right(self, value: tuple[float, float]) -> None:
-        self[2], self[1] = (self._ensure_is_number(x) for x in value)
+        pass
 
     @property
     def upper_left(self) -> tuple[float, float]:
@@ -105,11 +96,11 @@ class RectangleObject(ArrayObject):
         Property to read and modify the upper left coordinate of this box
         in (x,y) form.
         """
-        return self.left, self.top
+        pass
 
     @upper_left.setter
     def upper_left(self, value: tuple[float, float]) -> None:
-        self[0], self[3] = (self._ensure_is_number(x) for x in value)
+        pass
 
     @property
     def upper_right(self) -> tuple[float, float]:
@@ -117,16 +108,16 @@ class RectangleObject(ArrayObject):
         Property to read and modify the upper right coordinate of this box
         in (x,y) form.
         """
-        return self.right, self.top
+        pass
 
     @upper_right.setter
     def upper_right(self, value: tuple[float, float]) -> None:
-        self[2], self[3] = (self._ensure_is_number(x) for x in value)
+        pass
 
     @property
     def width(self) -> float:
-        return self.right - self.left
+        pass
 
     @property
     def height(self) -> float:
-        return self.top - self.bottom
+        pass

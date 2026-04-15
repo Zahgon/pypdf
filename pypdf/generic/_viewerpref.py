@@ -48,88 +48,47 @@ class ViewerPreferences(DictionaryObject):
             pass
 
     def _get_bool(self, key: str, default: Optional[BooleanObject]) -> Optional[BooleanObject]:
-        return self.get(key, default)
+        pass
 
     def _set_bool(self, key: str, v: bool) -> None:
-        self[NameObject(key)] = BooleanObject(v is True)
+        pass
 
     def _get_name(self, key: str, default: Optional[NameObject]) -> Optional[NameObject]:
-        return self.get(key, default)
+        pass
 
     def _set_name(self, key: str, lst: list[str], v: NameObject) -> None:
-        if v[0] != "/":
-            raise ValueError(f"{v} does not start with '/'")
-        if lst != [] and v not in lst:
-            raise ValueError(f"{v} is an unacceptable value")
-        self[NameObject(key)] = NameObject(v)
+        pass
 
     def _get_arr(self, key: str, default: Optional[list[Any]]) -> Optional[ArrayObject]:
-        return self.get(key, None if default is None else ArrayObject(default))
+        pass
 
     def _set_arr(self, key: str, v: Optional[ArrayObject]) -> None:
-        if v is None:
-            try:
-                del self[NameObject(key)]
-            except KeyError:
-                pass
-            return
-        if not isinstance(v, ArrayObject):
-            raise ValueError("ArrayObject is expected")
-        self[NameObject(key)] = v
+        pass
 
     def _get_int(self, key: str, default: Optional[NumberObject]) -> Optional[NumberObject]:
-        return self.get(key, default)
+        pass
 
     def _set_int(self, key: str, v: int) -> None:
-        self[NameObject(key)] = NumberObject(v)
+        pass
 
     @property
     def PRINT_SCALING(self) -> NameObject:
-        return NameObject("/PrintScaling")
+        pass
 
     def __new__(cls: Any, value: Any = None) -> "ViewerPreferences":  # noqa: PYI034
         def _add_prop_bool(key: str, default: Optional[BooleanObject]) -> property:
-            return property(
-                lambda self: self._get_bool(key, default),
-                lambda self, v: self._set_bool(key, v),
-                None,
-                f"""
-            Returns/Modify the status of {key}, Returns {default} if not defined
-            """,
-            )
+            pass
 
         def _add_prop_name(
             key: str, lst: list[str], default: Optional[NameObject]
         ) -> property:
-            return property(
-                lambda self: self._get_name(key, default),
-                lambda self, v: self._set_name(key, lst, v),
-                None,
-                f"""
-            Returns/Modify the status of {key}, Returns {default} if not defined.
-            Acceptable values: {lst}
-            """,
-            )
+            pass
 
         def _add_prop_arr(key: str, default: Optional[ArrayObject]) -> property:
-            return property(
-                lambda self: self._get_arr(key, default),
-                lambda self, v: self._set_arr(key, v),
-                None,
-                f"""
-            Returns/Modify the status of {key}, Returns {default} if not defined
-            """,
-            )
+            pass
 
         def _add_prop_int(key: str, default: Optional[int]) -> property:
-            return property(
-                lambda self: self._get_int(key, default),
-                lambda self, v: self._set_int(key, v),
-                None,
-                f"""
-            Returns/Modify the status of {key}, Returns {default} if not defined
-            """,
-            )
+            pass
 
         cls.hide_toolbar = _add_prop_bool("/HideToolbar", f_obj)
         cls.hide_menubar = _add_prop_bool("/HideMenubar", f_obj)

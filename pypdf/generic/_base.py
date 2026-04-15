@@ -79,13 +79,10 @@ class PdfObject(PdfObjectProtocol):
         )
 
     def hash_value_data(self) -> bytes:
-        return f"{self}".encode()
+        pass
 
     def hash_value(self) -> bytes:
-        return (
-            f"{self.__class__.__name__}:"
-            f"{self.hash_func(self.hash_value_data()).hexdigest()}"
-        ).encode()
+        pass
 
     def replicate(
         self,
@@ -102,7 +99,7 @@ class PdfObject(PdfObjectProtocol):
           The cloned PdfObject
 
         """
-        return self.clone(pdf_dest)
+        pass
 
     def clone(
         self,
@@ -336,7 +333,7 @@ class IndirectObject(PdfObject):
         self,
         pdf_dest: PdfWriterProtocol,
     ) -> "PdfObject":
-        return IndirectObject(self.idnum, self.generation, pdf_dest)
+        pass
 
     def clone(
         self,
@@ -376,7 +373,7 @@ class IndirectObject(PdfObject):
 
     @property
     def indirect_reference(self) -> "IndirectObject":  # type: ignore[override]
-        return self
+        pass
 
     def get_object(self) -> Optional["PdfObject"]:
         return self.pdf.get_object(self)
@@ -626,7 +623,7 @@ class ByteStringObject(bytes, PdfObject):
     @property
     def original_bytes(self) -> bytes:
         """For compatibility with TextStringObject.original_bytes."""
-        return self
+        pass
 
     def write_to_stream(
         self, stream: StreamType, encryption_key: Union[None, str, bytes] = None
@@ -732,9 +729,7 @@ class TextStringObject(str, PdfObject):  # noqa: SLOT000
         if that occurs, this "original_bytes" property can be used to
         back-calculate what the original encoded bytes were.
         """
-        if self._original_bytes is not None:
-            return self._original_bytes
-        return self.get_original_bytes()
+        pass
 
     def get_original_bytes(self) -> bytes:
         # We're a text string object, but the library is trying to get our raw
@@ -742,15 +737,7 @@ class TextStringObject(str, PdfObject):  # noqa: SLOT000
         # we were wrong. It's pretty common. Return the original bytes that
         # would have been used to create this object, based upon the autodetect
         # method.
-        if self.autodetect_utf16:
-            if self.utf16_bom == codecs.BOM_UTF16_LE:
-                return codecs.BOM_UTF16_LE + self.encode("utf-16le")
-            if self.utf16_bom == codecs.BOM_UTF16_BE:
-                return codecs.BOM_UTF16_BE + self.encode("utf-16be")
-            return self.encode("utf-16be")
-        if self.autodetect_pdfdocencoding:
-            return encode_pdfdocencoding(self)
-        raise Exception("no information about original bytes")  # pragma: no cover
+        pass
 
     def get_encoded_bytes(self) -> bytes:
         # Try to write the string out as a PDFDocEncoding encoded string. It's
@@ -860,15 +847,11 @@ class NameObject(str, PdfObject):  # noqa: SLOT000
         Returns:
             NameObject with sanitized name.
         """
-        name = str(self).removeprefix("/")
-        name = re.sub(r"\ ", "_", name)
-        name = re.sub(r"[^a-zA-Z0-9_-]", "_", name)
-        return NameObject("/" + name)
+        pass
 
     @classproperty
     def surfix(cls) -> bytes:  # noqa: N805
-        deprecation_with_replacement("surfix", "prefix", "5.0.0")
-        return b"/"
+        pass
 
     @staticmethod
     def unnumber(sin: bytes) -> bytes:

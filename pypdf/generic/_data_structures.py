@@ -101,16 +101,7 @@ class ArrayObject(list[Any], PdfObject):
         self,
         pdf_dest: PdfWriterProtocol,
     ) -> "ArrayObject":
-        arr = cast(
-            "ArrayObject",
-            self._reference_clone(ArrayObject(), pdf_dest, False),
-        )
-        for data in self:
-            if hasattr(data, "replicate"):
-                arr.append(data.replicate(pdf_dest))
-            else:
-                arr.append(data)
-        return arr
+        pass
 
     def clone(
         self,
@@ -165,20 +156,7 @@ class ArrayObject(list[Any], PdfObject):
 
     def _to_lst(self, lst: Any) -> list[Any]:
         # Convert to list, internal
-        if isinstance(lst, (list, tuple, set)):
-            pass
-        elif isinstance(lst, PdfObject):
-            lst = [lst]
-        elif isinstance(lst, str):
-            if lst[0] == "/":
-                lst = [NameObject(lst)]
-            else:
-                lst = [TextStringObject(lst)]
-        elif isinstance(lst, bytes):
-            lst = [ByteStringObject(lst)]
-        else:  # for numbers,...
-            lst = [lst]
-        return lst
+        pass
 
     def __add__(self, lst: Any) -> "ArrayObject":
         """
@@ -274,15 +252,7 @@ class DictionaryObject(dict[Any, Any], PdfObject):
         self,
         pdf_dest: PdfWriterProtocol,
     ) -> "DictionaryObject":
-        d__ = cast(
-            "DictionaryObject",
-            self._reference_clone(self.__class__(), pdf_dest, False),
-        )
-        for k, v in self.items():
-            d__[k.replicate(pdf_dest)] = (
-                v.replicate(pdf_dest) if hasattr(v, "replicate") else v
-            )
-        return d__
+        pass
 
     def clone(
         self,
@@ -450,16 +420,7 @@ class DictionaryObject(dict[Any, Any], PdfObject):
             Current key or inherited one, otherwise default value.
 
         """
-        if key in self:
-            return self[key]
-        try:
-            if "/Parent" not in self:
-                return default
-            raise KeyError("Not present")
-        except KeyError:
-            return cast("DictionaryObject", self["/Parent"].get_object()).get_inherited(
-                key, default
-            )
+        pass
 
     def __setitem__(self, key: Any, value: Any) -> Any:
         if not isinstance(key, PdfObject):
@@ -469,11 +430,7 @@ class DictionaryObject(dict[Any, Any], PdfObject):
         return dict.__setitem__(self, key, value)
 
     def setdefault(self, key: Any, value: Optional[Any] = None) -> Any:
-        if not isinstance(key, PdfObject):
-            raise ValueError("Key must be a PdfObject")
-        if not isinstance(value, PdfObject):
-            raise ValueError("Value must be a PdfObject")
-        return dict.setdefault(self, key, value)
+        pass
 
     def __getitem__(self, key: Any) -> PdfObject:
         return dict.__getitem__(self, key).get_object()
@@ -492,14 +449,7 @@ class DictionaryObject(dict[Any, Any], PdfObject):
           return None if no metadata was found on the document root.
 
         """
-        from ..xmp import XmpInformation  # noqa: PLC0415
-
-        metadata = self.get("/Metadata", None)
-        if is_null_or_none(metadata):
-            return None
-        assert metadata is not None, "mypy"
-        metadata = metadata.get_object()
-        return XmpInformation(metadata)
+        pass
 
     def write_to_stream(
         self, stream: StreamType, encryption_key: Union[None, str, bytes] = None
@@ -696,67 +646,26 @@ class TreeObject(DictionaryObject):
             self.update(dct)
 
     def has_children(self) -> bool:
-        return "/First" in self
+        pass
 
     def __iter__(self) -> Any:
         return self.children()
 
     def children(self) -> Iterable[Any]:
-        if not self.has_children():
-            return
-
-        child_ref = self[NameObject("/First")]
-        last = self[NameObject("/Last")]
-        child = child_ref.get_object()
-        visited: set[int] = set()
-        while True:
-            child_id = id(child)
-            if child_id in visited:
-                logger_warning(f"Detected cycle in outline structure for {child}", __name__)
-                return
-            visited.add(child_id)
-
-            yield child
-
-            if child == last:
-                return
-            child_ref = child.get(NameObject("/Next"))  # type: ignore
-            if is_null_or_none(child_ref):
-                return
-            child = child_ref.get_object()
+        pass
 
     def add_child(self, child: Any, pdf: PdfWriterProtocol) -> None:
-        self.insert_child(child, None, pdf)
+        pass
 
     def inc_parent_counter_default(
         self, parent: Union[None, IndirectObject, "TreeObject"], n: int
     ) -> None:
-        if is_null_or_none(parent):
-            return
-        assert parent is not None, "mypy"
-        parent = cast("TreeObject", parent.get_object())
-        if "/Count" in parent:
-            parent[NameObject("/Count")] = NumberObject(
-                max(0, cast(int, parent[NameObject("/Count")]) + n)
-            )
-            self.inc_parent_counter_default(parent.get("/Parent", None), n)
+        pass
 
     def inc_parent_counter_outline(
         self, parent: Union[None, IndirectObject, "TreeObject"], n: int
     ) -> None:
-        if is_null_or_none(parent):
-            return
-        assert parent is not None, "mypy"
-        parent = cast("TreeObject", parent.get_object())
-        #  BooleanObject requires comparison with == not is
-        opn = parent.get("/%is_open%", True) == True  # noqa: E712
-        c = cast(int, parent.get("/Count", 0))
-        if c < 0:
-            c = abs(c)
-        parent[NameObject("/Count")] = NumberObject((c + n) * (1 if opn else -1))
-        if not opn:
-            return
-        self.inc_parent_counter_outline(parent.get("/Parent", None), n)
+        pass
 
     def insert_child(
         self,
@@ -821,90 +730,17 @@ class TreeObject(DictionaryObject):
             last:
 
         """
-        next_ref = cur.get(NameObject("/Next"), None)
-        if prev is None:
-            if next_ref:
-                # Removing first tree node
-                next_obj = next_ref.get_object()
-                del next_obj[NameObject("/Prev")]
-                self[NameObject("/First")] = next_ref
-                self[NameObject("/Count")] = NumberObject(
-                    self[NameObject("/Count")] - 1  # type: ignore
-                )
-
-            else:
-                # Removing only tree node
-                self[NameObject("/Count")] = NumberObject(0)
-                del self[NameObject("/First")]
-                if NameObject("/Last") in self:
-                    del self[NameObject("/Last")]
-        else:
-            if next_ref:
-                # Removing middle tree node
-                next_obj = next_ref.get_object()
-                next_obj[NameObject("/Prev")] = prev_ref
-                prev[NameObject("/Next")] = next_ref
-            else:
-                # Removing last tree node
-                assert cur == last
-                del prev[NameObject("/Next")]
-                self[NameObject("/Last")] = prev_ref
-            self[NameObject("/Count")] = NumberObject(self[NameObject("/Count")] - 1)  # type: ignore
+        pass
 
     def remove_child(self, child: Any) -> None:
-        child_obj = child.get_object()
-        child = child_obj.indirect_reference
-
-        if NameObject("/Parent") not in child_obj:
-            raise ValueError("Removed child does not appear to be a tree item")
-        if child_obj[NameObject("/Parent")] != self:
-            raise ValueError("Removed child is not a member of this tree")
-
-        found = False
-        prev_ref = None
-        prev = None
-        cur_ref: Optional[Any] = self[NameObject("/First")]
-        cur: Optional[dict[str, Any]] = cur_ref.get_object()  # type: ignore
-        last_ref = self[NameObject("/Last")]
-        last = last_ref.get_object()
-        while cur is not None:
-            if cur == child_obj:
-                self._remove_node_from_tree(prev, prev_ref, cur, last)
-                found = True
-                break
-
-            # Go to the next node
-            prev_ref = cur_ref
-            prev = cur
-            if NameObject("/Next") in cur:
-                cur_ref = cur[NameObject("/Next")]
-                cur = cur_ref.get_object()
-            else:
-                cur_ref = None
-                cur = None
-
-        if not found:
-            raise ValueError("Removal couldn't find item in tree")
-
-        _reset_node_tree_relationship(child_obj)
+        pass
 
     def remove_from_tree(self) -> None:
         """Remove the object from the tree it is in."""
-        if NameObject("/Parent") not in self:
-            raise ValueError("Removed child does not appear to be a tree item")
-        cast("TreeObject", self["/Parent"]).remove_child(self)
+        pass
 
     def empty_tree(self) -> None:
-        for child in self:
-            child_obj = child.get_object()
-            _reset_node_tree_relationship(child_obj)
-
-        if NameObject("/Count") in self:
-            del self[NameObject("/Count")]
-        if NameObject("/First") in self:
-            del self[NameObject("/First")]
-        if NameObject("/Last") in self:
-            del self[NameObject("/Last")]
+        pass
 
 
 def _reset_node_tree_relationship(child_obj: Any) -> None:
@@ -917,11 +753,7 @@ def _reset_node_tree_relationship(child_obj: Any) -> None:
         child_obj:
 
     """
-    del child_obj[NameObject("/Parent")]
-    if NameObject("/Next") in child_obj:
-        del child_obj[NameObject("/Next")]
-    if NameObject("/Prev") in child_obj:
-        del child_obj[NameObject("/Prev")]
+    pass
 
 
 class StreamObject(DictionaryObject):
@@ -933,26 +765,7 @@ class StreamObject(DictionaryObject):
         self,
         pdf_dest: PdfWriterProtocol,
     ) -> "StreamObject":
-        d__ = cast(
-            "StreamObject",
-            self._reference_clone(self.__class__(), pdf_dest, False),
-        )
-        d__._data = self._data
-        try:
-            decoded_self = self.decoded_self
-            if decoded_self is None:
-                self.decoded_self = None
-            else:
-                self.decoded_self = cast(
-                    "DecodedStreamObject", decoded_self.replicate(pdf_dest)
-                )
-        except Exception:
-            pass
-        for k, v in self.items():
-            d__[k.replicate(pdf_dest)] = (
-                v.replicate(pdf_dest) if hasattr(v, "replicate") else v
-            )
-        return d__
+        pass
 
     def _clone(
         self,
@@ -1004,9 +817,7 @@ class StreamObject(DictionaryObject):
         self._data = data
 
     def hash_value_data(self) -> bytes:
-        data = super().hash_value_data()
-        data += self.get_data()
-        return data
+        pass
 
     def write_to_stream(
         self, stream: StreamType, encryption_key: Union[None, str, bytes] = None
@@ -1039,36 +850,7 @@ class StreamObject(DictionaryObject):
         return retval
 
     def flate_encode(self, level: int = -1) -> "EncodedStreamObject":
-        from ..filters import FlateDecode  # noqa: PLC0415
-
-        if SA.FILTER in self:
-            f = self[SA.FILTER]
-            if isinstance(f, ArrayObject):
-                f = ArrayObject([NameObject(FT.FLATE_DECODE), *f])
-                try:
-                    params = ArrayObject(
-                        [NullObject(), *self.get(SA.DECODE_PARMS, ArrayObject())]
-                    )
-                except TypeError:
-                    # case of error where the * operator is not working (not an array
-                    params = ArrayObject(
-                        [NullObject(), self.get(SA.DECODE_PARMS, ArrayObject())]
-                    )
-            else:
-                f = ArrayObject([NameObject(FT.FLATE_DECODE), f])
-                params = ArrayObject(
-                    [NullObject(), self.get(SA.DECODE_PARMS, NullObject())]
-                )
-        else:
-            f = NameObject(FT.FLATE_DECODE)
-            params = None
-        retval = EncodedStreamObject()
-        retval.update(self)
-        retval[NameObject(SA.FILTER)] = f
-        if params is not None:
-            retval[NameObject(SA.DECODE_PARMS)] = params
-        retval._data = FlateDecode.encode(self._data, level)
-        return retval
+        pass
 
     def decode_as_image(self, pillow_parameters: Union[dict[str, Any], None] = None) -> Any:
         """
@@ -1086,18 +868,7 @@ class StreamObject(DictionaryObject):
                 stops in your program.
 
         """
-        from ._image_xobject import _xobj_to_image  # noqa: PLC0415
-
-        if self.get("/Subtype", "") != "/Image":
-            try:
-                msg = f"{self.indirect_reference} does not seem to be an Image"  # pragma: no cover
-            except AttributeError:
-                msg = f"{self.__repr__()} object does not seem to be an Image"  # pragma: no cover
-            logger_warning(msg, __name__)
-        extension, _, img = _xobj_to_image(self, pillow_parameters)
-        if extension is None:
-            return None  # pragma: no cover
-        return img
+        pass
 
 
 class DecodedStreamObject(StreamObject):
@@ -1226,31 +997,7 @@ class ContentStream(DecodedStreamObject):
         self,
         pdf_dest: PdfWriterProtocol,
     ) -> "ContentStream":
-        d__ = cast(
-            "ContentStream",
-            self._reference_clone(self.__class__(None, None), pdf_dest, False),
-        )
-        d__._data = self._data
-        try:
-            decoded_self = self.decoded_self
-            if decoded_self is None:
-                self.decoded_self = None
-            else:
-                self.decoded_self = cast(
-                    "DecodedStreamObject", decoded_self.replicate(pdf_dest)
-                )
-        except Exception:
-            pass
-        for k, v in self.items():
-            d__[k.replicate(pdf_dest)] = (
-                v.replicate(pdf_dest) if hasattr(v, "replicate") else v
-            )
-        return d__
-        d__.set_data(self._data)
-        d__.pdf = pdf_dest
-        d__._operations = list(self._operations)
-        d__.forced_encoding = self.forced_encoding
-        return d__
+        pass
 
     def clone(
         self,
@@ -1316,109 +1063,12 @@ class ContentStream(DecodedStreamObject):
 
     def _parse_content_stream(self, stream: StreamType) -> None:
         # 7.8.2 Content Streams
-        stream.seek(0, 0)
-        operands: list[Union[int, str, PdfObject]] = []
-        while True:
-            peek = read_non_whitespace(stream)
-            if peek in (b"", 0):
-                break
-            stream.seek(-1, 1)
-            if peek.isalpha() or peek in (b"'", b'"'):
-                operator = read_until_regex(stream, NameObject.delimiter_pattern)
-                if operator == b"BI":
-                    # begin inline image - a completely different parsing
-                    # mechanism is required, of course... thanks buddy...
-                    assert operands == []
-                    ii = self._read_inline_image(stream)
-                    self._operations.append((ii, b"INLINE IMAGE"))
-                else:
-                    self._operations.append((operands, operator))
-                    operands = []
-            elif peek == b"%":
-                # If we encounter a comment in the content stream, we have to
-                # handle it here. Typically, read_object will handle
-                # encountering a comment -- but read_object assumes that
-                # following the comment must be the object we're trying to
-                # read. In this case, it could be an operator instead.
-                while peek not in (b"\r", b"\n", b""):
-                    peek = stream.read(1)
-            else:
-                operands.append(read_object(stream, None, self.forced_encoding))
+        pass
 
     def _read_inline_image(self, stream: StreamType) -> dict[str, Any]:
         # begin reading just after the "BI" - begin image
         # first read the dictionary of settings.
-        settings = DictionaryObject()
-        while True:
-            tok = read_non_whitespace(stream)
-            stream.seek(-1, 1)
-            if tok == b"I":
-                # "ID" - begin of image data
-                break
-            key = read_object(stream, self.pdf)
-            tok = read_non_whitespace(stream)
-            stream.seek(-1, 1)
-            value = read_object(stream, self.pdf)
-            settings[key] = value
-        # left at beginning of ID
-        tmp = stream.read(3)
-        assert tmp[:2] == b"ID"
-        filtr = settings.get("/F", settings.get("/Filter", "not set"))
-        savpos = stream.tell()
-        if isinstance(filtr, list):
-            filtr = filtr[0]  # used forencoding
-        if "AHx" in filtr or "ASCIIHexDecode" in filtr:
-            data = extract_inline__ascii_hex_decode(stream)
-        elif "A85" in filtr or "ASCII85Decode" in filtr:
-            data = extract_inline__ascii85_decode(stream)
-        elif "RL" in filtr or "RunLengthDecode" in filtr:
-            data = extract_inline__run_length_decode(stream)
-        elif "DCT" in filtr or "DCTDecode" in filtr:
-            data = extract_inline__dct_decode(stream)
-        elif filtr == "not set":
-            cs = settings.get("/CS", "")
-            if isinstance(cs, list):
-                cs = cs[0]
-            if "RGB" in cs:
-                lcs = 3
-            elif "CMYK" in cs:
-                lcs = 4
-            else:
-                bits = settings.get(
-                    "/BPC",
-                    8 if cs in {"/I", "/G", "/Indexed", "/DeviceGray"} else -1,
-                )
-                if bits > 0:
-                    lcs = bits / 8.0
-                else:
-                    data = extract_inline_default(stream)
-                    lcs = -1
-            if lcs > 0:
-                data = stream.read(
-                    ceil(cast(int, settings["/W"]) * lcs) * cast(int, settings["/H"])
-                )
-            # Move to the `EI` if possible.
-            ei = read_non_whitespace(stream)
-            stream.seek(-1, 1)
-        else:
-            data = extract_inline_default(stream)
-
-        ei = stream.read(3)
-        stream.seek(-1, 1)
-        if ei[:2] != b"EI" or ei[2:3] not in WHITESPACES:
-            # Deal with wrong/missing `EI` tags. Example: Wrong dimensions specified above.
-            stream.seek(savpos, 0)
-            data = extract_inline_default(stream)
-            ei = stream.read(3)
-            stream.seek(-1, 1)
-            if ei[:2] != b"EI" or ei[2:3] not in WHITESPACES:  # pragma: no cover
-                # Check the same condition again. This should never fail as
-                # edge cases are covered by `extract_inline_default` above,
-                # but check this ot make sure that we are behind the `EI` afterwards.
-                raise PdfStreamError(
-                    f"Could not extract inline image, even using fallback. Expected 'EI', got {ei!r}"
-                )
-        return {"settings": settings, "data": data}
+        pass
 
     # This overrides the parent method
     def get_data(self) -> bytes:
@@ -1449,22 +1099,14 @@ class ContentStream(DecodedStreamObject):
 
     @property
     def operations(self) -> list[tuple[Any, bytes]]:
-        if not self._operations and self._data:
-            self._parse_content_stream(BytesIO(self._data))
-            self._data = b""
-        return self._operations
+        pass
 
     @operations.setter
     def operations(self, operations: list[tuple[Any, bytes]]) -> None:
-        self._operations = operations
-        self._data = b""
+        pass
 
     def isolate_graphics_state(self) -> None:
-        if self._operations:
-            self._operations.insert(0, ([], b"q"))
-            self._operations.append(([], b"Q"))
-        elif self._data:
-            self._data = b"q\n" + self._data + b"\nQ\n"
+        pass
 
     # This overrides the parent method
     def write_to_stream(
@@ -1559,27 +1201,27 @@ class Field(TreeObject):
     @property
     def field_type(self) -> Optional[NameObject]:
         """Read-only property accessing the type of this field."""
-        return self.get(FieldDictionaryAttributes.FT)
+        pass
 
     @property
     def parent(self) -> Optional[DictionaryObject]:
         """Read-only property accessing the parent of this field."""
-        return self.get(FieldDictionaryAttributes.Parent)
+        pass
 
     @property
     def kids(self) -> Optional["ArrayObject"]:
         """Read-only property accessing the kids of this field."""
-        return self.get(FieldDictionaryAttributes.Kids)
+        pass
 
     @property
     def name(self) -> Optional[str]:
         """Read-only property accessing the name of this field."""
-        return self.get(FieldDictionaryAttributes.T)
+        pass
 
     @property
     def alternate_name(self) -> Optional[str]:
         """Read-only property accessing the alternate name of this field."""
-        return self.get(FieldDictionaryAttributes.TU)
+        pass
 
     @property
     def mapping_name(self) -> Optional[str]:
@@ -1589,7 +1231,7 @@ class Field(TreeObject):
         This name is used by pypdf as a key in the dictionary returned by
         :meth:`get_fields()<pypdf.PdfReader.get_fields>`
         """
-        return self.get(FieldDictionaryAttributes.TM)
+        pass
 
     @property
     def flags(self) -> Optional[int]:
@@ -1597,7 +1239,7 @@ class Field(TreeObject):
         Read-only property accessing the field flags, specifying various
         characteristics of the field (see Table 8.70 of the PDF 1.7 reference).
         """
-        return self.get(FieldDictionaryAttributes.Ff)
+        pass
 
     @property
     def value(self) -> Optional[Any]:
@@ -1606,12 +1248,12 @@ class Field(TreeObject):
 
         Format varies based on field type.
         """
-        return self.get(FieldDictionaryAttributes.V)
+        pass
 
     @property
     def default_value(self) -> Optional[Any]:
         """Read-only property accessing the default value of this field."""
-        return self.get(FieldDictionaryAttributes.DV)
+        pass
 
     @property
     def additional_actions(self) -> Optional[DictionaryObject]:
@@ -1621,7 +1263,7 @@ class Field(TreeObject):
         This dictionary defines the field's behavior in response to trigger
         events. See Section 8.5.2 of the PDF 1.7 reference.
         """
-        return self.get(FieldDictionaryAttributes.AA)
+        pass
 
 
 class Destination(TreeObject):
@@ -1700,14 +1342,7 @@ class Destination(TreeObject):
 
     @property
     def dest_array(self) -> "ArrayObject":
-        return ArrayObject(
-            [self.raw_get("/Page"), self["/Type"]]
-            + [
-                self[x]
-                for x in ["/Left", "/Bottom", "/Right", "/Top", "/Zoom"]
-                if x in self
-            ]
-        )
+        pass
 
     def write_to_stream(
         self, stream: StreamType, encryption_key: Union[None, str, bytes] = None
@@ -1735,49 +1370,47 @@ class Destination(TreeObject):
     @property
     def title(self) -> Optional[str]:
         """Read-only property accessing the destination title."""
-        return self.get("/Title")
+        pass
 
     @property
     def page(self) -> Optional[IndirectObject]:
         """Read-only property accessing the IndirectObject of the destination page."""
-        return self.get("/Page")
+        pass
 
     @property
     def typ(self) -> Optional[str]:
         """Read-only property accessing the destination type."""
-        return self.get("/Type")
+        pass
 
     @property
     def zoom(self) -> Optional[int]:
         """Read-only property accessing the zoom factor."""
-        return self.get("/Zoom", None)
+        pass
 
     @property
     def left(self) -> Optional[FloatObject]:
         """Read-only property accessing the left horizontal coordinate."""
-        return self.get("/Left", None)
+        pass
 
     @property
     def right(self) -> Optional[FloatObject]:
         """Read-only property accessing the right horizontal coordinate."""
-        return self.get("/Right", None)
+        pass
 
     @property
     def top(self) -> Optional[FloatObject]:
         """Read-only property accessing the top vertical coordinate."""
-        return self.get("/Top", None)
+        pass
 
     @property
     def bottom(self) -> Optional[FloatObject]:
         """Read-only property accessing the bottom vertical coordinate."""
-        return self.get("/Bottom", None)
+        pass
 
     @property
     def color(self) -> Optional["ArrayObject"]:
         """Read-only property accessing the color in (R, G, B) with values 0.0-1.0."""
-        return self.get(
-            "/C", ArrayObject([FloatObject(0), FloatObject(0), FloatObject(0)])
-        )
+        pass
 
     @property
     def font_format(self) -> Optional[OutlineFontFlag]:
@@ -1786,7 +1419,7 @@ class Destination(TreeObject):
 
         1=italic, 2=bold, 3=both
         """
-        return self.get("/F", 0)
+        pass
 
     @property
     def outline_count(self) -> Optional[int]:
@@ -1797,4 +1430,4 @@ class Destination(TreeObject):
         negative = collapsed
         absolute value = number of visible descendants at all levels
         """
-        return self.get("/Count", None)
+        pass

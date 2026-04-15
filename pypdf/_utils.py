@@ -76,35 +76,7 @@ StrByteType = Union[str, StreamType]
 
 
 def parse_iso8824_date(text: Optional[str]) -> Optional[datetime]:
-    orgtext = text
-    if not text:
-        return None
-    if text[0].isdigit():
-        text = "D:" + text
-    if text.endswith(("Z", "z")):
-        text += "0000"
-    text = text.replace("z", "+").replace("Z", "+").replace("'", "")
-    i = max(text.find("+"), text.find("-"))
-    if i > 0 and i != len(text) - 5:
-        text += "00"
-    for f in (
-        "D:%Y",
-        "D:%Y%m",
-        "D:%Y%m%d",
-        "D:%Y%m%d%H",
-        "D:%Y%m%d%H%M",
-        "D:%Y%m%d%H%M%S",
-        "D:%Y%m%d%H%M%S%z",
-    ):
-        try:
-            d = datetime.strptime(text, f)  # noqa: DTZ007
-        except ValueError:
-            continue
-        else:
-            if text.endswith("+0000"):
-                d = d.replace(tzinfo=timezone.utc)
-            return d
-    raise ValueError(f"Can not convert date: {orgtext}")
+    pass
 
 
 def format_iso8824_date(dt: datetime) -> str:
@@ -120,16 +92,7 @@ def format_iso8824_date(dt: datetime) -> str:
     Returns:
         A date string in PDF format.
     """
-    date_str = dt.strftime("D:%Y%m%d%H%M%S")
-    if dt.tzinfo is not None:
-        offset = dt.utcoffset()
-        assert offset is not None
-        total_seconds = int(offset.total_seconds())
-        hours, remainder = divmod(abs(total_seconds), 3600)
-        minutes = remainder // 60
-        sign = "+" if total_seconds >= 0 else "-"
-        date_str += f"{sign}{hours:02d}'{minutes:02d}'"
-    return date_str
+    pass
 
 
 def _get_max_pdf_version_header(header1: str, header2: str) -> str:
@@ -368,22 +331,12 @@ def read_previous_line(stream: StreamType) -> bytes:
 def matrix_multiply(
     a: TransformationMatrixType, b: TransformationMatrixType
 ) -> TransformationMatrixType:
-    return tuple(  # type: ignore[return-value]
-        tuple(sum(float(i) * float(j) for i, j in zip(row, col)) for col in zip(*b))
-        for row in a
-    )
+    pass
 
 
 def mark_location(stream: StreamType) -> None:
     """Create text file showing current location in context."""
-    # Mainly for debugging
-    radius = 5000
-    stream.seek(-radius, 1)
-    with open("pypdf_pdfLocation.txt", "wb") as output_fh:
-        output_fh.write(stream.read(radius))
-        output_fh.write(b"HERE")
-        output_fh.write(stream.read(radius))
-    stream.seek(-radius, 1)
+    pass
 
 
 @overload
@@ -402,9 +355,7 @@ def ord_(b: int) -> int:
 
 
 def ord_(b: Union[int, str, bytes]) -> Union[int, bytes]:
-    if isinstance(b, str):
-        return ord(b)
-    return b
+    pass
 
 
 def deprecate(msg: str, stacklevel: int = 3) -> None:
@@ -425,14 +376,12 @@ def deprecate_with_replacement(old_name: str, new_name: str, removed_in: str) ->
 
 def deprecation_with_replacement(old_name: str, new_name: str, removed_in: str) -> None:
     """Raise an exception that a feature was already removed, but has a replacement."""
-    deprecation(
-        f"{old_name} is deprecated and was removed in pypdf {removed_in}. Use {new_name} instead."
-    )
+    pass
 
 
 def deprecate_no_replacement(name: str, removed_in: str) -> None:
     """Issue a warning that a feature will be removed without replacement."""
-    deprecate(f"{name} is deprecated and will be removed in pypdf {removed_in}.", 4)
+    pass
 
 
 def deprecation_no_replacement(name: str, removed_in: str) -> None:
@@ -449,7 +398,7 @@ def logger_error(message: str, *, source: str, **values: Any) -> None:
     See the docs on when to use which:
     https://pypdf.readthedocs.io/en/latest/user/suppress-warnings.html
     """
-    logging.getLogger(source).error(message, values)
+    pass
 
 
 def logger_warning(msg: str, src: str) -> None:
@@ -484,26 +433,7 @@ def rename_kwargs(
         fail:
 
     """
-    for old_term, new_term in aliases.items():
-        if old_term in kwargs:
-            if fail:
-                raise DeprecationError(
-                    f"{old_term} is deprecated as an argument. Use {new_term} instead"
-                )
-            if new_term in kwargs:
-                raise TypeError(
-                    f"{func_name} received both {old_term} and {new_term} as "
-                    f"an argument. {old_term} is deprecated. "
-                    f"Use {new_term} instead."
-                )
-            kwargs[new_term] = kwargs.pop(old_term)
-            warnings.warn(
-                message=(
-                    f"{old_term} is deprecated as an argument. Use {new_term} instead"
-                ),
-                category=DeprecationWarning,
-                stacklevel=3,
-            )
+    pass
 
 
 def _human_readable_bytes(bytes: int) -> str:
@@ -564,8 +494,7 @@ class classproperty:  # noqa: N801
         return self.fget(cls)
 
     def getter(self, method) -> Self:  # type: ignore  # noqa: ANN001
-        self.fget = method
-        return self
+        pass
 
 
 @dataclass
@@ -601,19 +530,7 @@ class Version:
         self.components = self._parse_version(version_str)
 
     def _parse_version(self, version_str: str) -> list[tuple[int, str]]:
-        components = version_str.split(".")
-        parsed_components = []
-        for component in components:
-            match = Version.COMPONENT_PATTERN.match(component)
-            if not match:
-                parsed_components.append((0, component))
-                continue
-            integer_prefix = match.group(1)
-            suffix = match.group(2)
-            if integer_prefix is None:
-                integer_prefix = 0
-            parsed_components.append((int(integer_prefix), suffix))
-        return parsed_components
+        pass
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Version):

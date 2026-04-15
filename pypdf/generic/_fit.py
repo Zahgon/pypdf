@@ -40,7 +40,7 @@ class Fit:
             The created fit object.
 
         """
-        return Fit(fit_type="/XYZ", fit_args=(left, top, zoom))
+        pass
 
     @classmethod
     def fit(cls) -> "Fit":
@@ -73,11 +73,11 @@ class Fit:
             The created fit object.
 
         """
-        return Fit(fit_type="/FitH", fit_args=(top,))
+        pass
 
     @classmethod
     def fit_vertically(cls, left: Optional[float] = None) -> "Fit":
-        return Fit(fit_type="/FitV", fit_args=(left,))
+        pass
 
     @classmethod
     def fit_rectangle(
@@ -110,7 +110,7 @@ class Fit:
             The created fit object.
 
         """
-        return Fit(fit_type="/FitR", fit_args=(left, bottom, right, top))
+        pass
 
     @classmethod
     def fit_box(cls) -> "Fit":
@@ -123,7 +123,7 @@ class Fit:
         different, use the smaller of the two, centering the bounding box
         within the window in the other dimension.
         """
-        return Fit(fit_type="/FitB")
+        pass
 
     @classmethod
     def fit_box_horizontally(cls, top: Optional[float] = None) -> "Fit":
@@ -143,7 +143,7 @@ class Fit:
             The created fit object.
 
         """
-        return Fit(fit_type="/FitBH", fit_args=(top,))
+        pass
 
     @classmethod
     def fit_box_vertically(cls, left: Optional[float] = None) -> "Fit":
@@ -163,7 +163,7 @@ class Fit:
             The created fit object.
 
         """
-        return Fit(fit_type="/FitBV", fit_args=(left,))
+        pass
 
     def __str__(self) -> str:
         if not self.fit_args:

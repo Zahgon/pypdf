@@ -587,8 +587,7 @@ def __create_old_class_instance(
     columns: int = 0,
     rows: int = 0
 ) -> CCITTParameters:
-    deprecation_with_replacement("CCITParameters", "CCITTParameters", "6.0.0")
-    return CCITTParameters(K, columns, rows)
+    pass
 
 
 # Create an alias for the old class name

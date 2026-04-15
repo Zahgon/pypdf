@@ -157,39 +157,10 @@ class PdfReader(PdfDocCommon):
             raise PdfReadError("Not an encrypted file")
 
     def _initialize_stream(self, stream: Union[StrByteType, Path]) -> None:
-        if hasattr(stream, "mode") and "b" not in stream.mode:
-            logger_warning(
-                "PdfReader stream/file object is not in binary mode. "
-                "It may not be read correctly.",
-                __name__,
-            )
-        self._stream_opened = False
-        if isinstance(stream, (str, Path)):
-            with open(stream, "rb") as fh:
-                stream = BytesIO(fh.read())
-            self._stream_opened = True
-        self.read(stream)
-        self.stream = stream
+        pass
 
     def _handle_encryption(self, password: Optional[Union[str, bytes]]) -> None:
-        self._override_encryption = True
-        # Some documents may not have a /ID, use two empty
-        # byte strings instead. Solves
-        # https://github.com/py-pdf/pypdf/issues/608
-        id_entry = self.trailer.get(TK.ID)
-        id1_entry = id_entry[0].get_object().original_bytes if id_entry else b""
-        encrypt_entry = cast(DictionaryObject, self.trailer[TK.ENCRYPT].get_object())
-        self._encryption = Encryption.read(encrypt_entry, id1_entry)
-
-        # try empty password if no password provided
-        pwd = password if password is not None else b""
-        if (
-            self._encryption.verify(pwd) == PasswordType.NOT_DECRYPTED
-            and password is not None
-        ):
-            # raise if password provided
-            raise WrongPasswordError("Wrong password")
-        self._override_encryption = False
+        pass
 
     def __enter__(self) -> Self:
         return self
@@ -216,46 +187,7 @@ class PdfReader(PdfDocCommon):
     @property
     def root_object(self) -> DictionaryObject:
         """Provide access to "/Root". Standardized with PdfWriter."""
-        if self._validated_root:
-            return self._validated_root
-        root = self.trailer.get(TK.ROOT)
-        if is_null_or_none(root):
-            logger_warning('Cannot find "/Root" key in trailer', __name__)
-        elif (
-            cast(DictionaryObject, cast(PdfObject, root).get_object()).get("/Type")
-            == "/Catalog"
-        ):
-            self._validated_root = cast(
-                DictionaryObject, cast(PdfObject, root).get_object()
-            )
-        else:
-            logger_warning("Invalid Root object in trailer", __name__)
-        if self._validated_root is None:
-            logger_warning('Searching object with "/Catalog" key', __name__)
-            number_of_objects = cast(int, self.trailer.get("/Size", 0))
-            for i in range(number_of_objects):
-                if i >= self._root_object_recovery_limit:
-                    raise LimitReachedError("Maximum Root object recovery limit reached.")
-                try:
-                    obj = self.get_object(i + 1)
-                except Exception:  # to be sure to capture all errors
-                    obj = None
-                if isinstance(obj, DictionaryObject) and obj.get("/Type") == "/Catalog":
-                    self._validated_root = obj
-                    logger_warning(f"Root found at {obj.indirect_reference!r}", __name__)
-                    break
-        if self._validated_root is None:
-            if not is_null_or_none(root) and "/Pages" in cast(DictionaryObject, cast(PdfObject, root).get_object()):
-                logger_warning(
-                    f"Possible root found at {cast(PdfObject, root).indirect_reference!r}, but missing /Catalog key",
-                    __name__
-                )
-                self._validated_root = cast(
-                    DictionaryObject, cast(PdfObject, root).get_object()
-                )
-            else:
-                raise PdfReadError("Cannot find Root object in pdf")
-        return self._validated_root
+        pass
 
     @property
     def _info(self) -> Optional[DictionaryObject]:
@@ -266,16 +198,7 @@ class PdfReader(PdfDocCommon):
             /Info Dictionary; None if the entry does not exist
 
         """
-        info = self.trailer.get(TK.INFO, None)
-        if is_null_or_none(info):
-            return None
-        assert info is not None, "mypy"
-        info = info.get_object()
-        if not isinstance(info, DictionaryObject):
-            raise PdfReadError(
-                "Trailer not found or does not point to a document information dictionary"
-            )
-        return info
+        pass
 
     @property
     def _ID(self) -> Optional[ArrayObject]:
@@ -286,11 +209,7 @@ class PdfReader(PdfDocCommon):
             /ID array; None if the entry does not exist
 
         """
-        id = self.trailer.get(TK.ID, None)
-        if is_null_or_none(id):
-            return None
-        assert id is not None, "mypy"
-        return cast(ArrayObject, id.get_object())
+        pass
 
     @property
     def pdf_header(self) -> str:
@@ -300,22 +219,12 @@ class PdfReader(PdfDocCommon):
         This is typically something like ``'%PDF-1.6'`` and can be used to
         detect if the file is actually a PDF file and which version it is.
         """
-        # TODO: Make this return a bytes object for consistency
-        #       but that needs a deprecation
-        loc = self.stream.tell()
-        self.stream.seek(0, 0)
-        pdf_file_version = self.stream.read(8).decode("utf-8", "backslashreplace")
-        self.stream.seek(loc, 0)  # return to where it was
-        return pdf_file_version
+        pass
 
     @property
     def xmp_metadata(self) -> Optional[XmpInformation]:
         """XMP (Extensible Metadata Platform) data."""
-        try:
-            self._override_encryption = True
-            return cast(XmpInformation, self.root_object.xmp_metadata)
-        finally:
-            self._override_encryption = False
+        pass
 
     def _get_page_number_by_indirect(
         self, indirect_reference: Union[None, int, NullObject, IndirectObject]
@@ -330,20 +239,7 @@ class PdfReader(PdfDocCommon):
             Page number or None.
 
         """
-        if self._page_id2num is None:
-            self._page_id2num = {
-                x.indirect_reference.idnum: i for i, x in enumerate(self.pages)  # type: ignore
-            }
-
-        if is_null_or_none(indirect_reference):
-            return None
-        assert isinstance(indirect_reference, (int, IndirectObject)), "mypy"
-        if isinstance(indirect_reference, int):
-            idnum = indirect_reference
-        else:
-            idnum = indirect_reference.idnum
-        assert self._page_id2num is not None, "hint for mypy"
-        return self._page_id2num.get(idnum, None)
+        pass
 
     def _get_object_from_stream(
         self, indirect_reference: IndirectObject
@@ -1359,7 +1255,7 @@ class PdfReader(PdfDocCommon):
         Note that this property, if true, will remain true even after the
         :meth:`decrypt()<pypdf.PdfReader.decrypt>` method is called.
         """
-        return TK.ENCRYPT in self.trailer
+        pass
 
     def add_form_topname(self, name: str) -> Optional[DictionaryObject]:
         """
@@ -1372,37 +1268,7 @@ class PdfReader(PdfDocCommon):
             The created object. ``None`` means no object was created.
 
         """
-        catalog = self.root_object
-
-        if "/AcroForm" not in catalog or not isinstance(
-            catalog["/AcroForm"], DictionaryObject
-        ):
-            return None
-        acroform = cast(DictionaryObject, catalog[NameObject("/AcroForm")])
-        if "/Fields" not in acroform:
-            # TODO: No error but this may be extended for XFA Forms
-            return None
-
-        interim = DictionaryObject()
-        interim[NameObject("/T")] = TextStringObject(name)
-        interim[NameObject("/Kids")] = acroform[NameObject("/Fields")]
-        self.cache_indirect_object(
-            0,
-            max(i for (g, i) in self.resolved_objects if g == 0) + 1,
-            interim,
-        )
-        arr = ArrayObject()
-        arr.append(interim.indirect_reference)
-        acroform[NameObject("/Fields")] = arr
-        for o in cast(ArrayObject, interim["/Kids"]):
-            obj = o.get_object()
-            if "/Parent" in obj:
-                logger_warning(
-                    f"Top Level Form Field {obj.indirect_reference} have a non-expected parent",
-                    __name__,
-                )
-            obj[NameObject("/Parent")] = interim.indirect_reference
-        return interim
+        pass
 
     def rename_form_topname(self, name: str) -> Optional[DictionaryObject]:
         """
@@ -1415,22 +1281,7 @@ class PdfReader(PdfDocCommon):
             The modified object. ``None`` means no object was modified.
 
         """
-        catalog = self.root_object
-
-        if "/AcroForm" not in catalog or not isinstance(
-            catalog["/AcroForm"], DictionaryObject
-        ):
-            return None
-        acroform = cast(DictionaryObject, catalog[NameObject("/AcroForm")])
-        if "/Fields" not in acroform:
-            return None
-
-        interim = cast(
-            DictionaryObject,
-            cast(ArrayObject, acroform[NameObject("/Fields")])[0].get_object(),
-        )
-        interim[NameObject("/T")] = TextStringObject(name)
-        return interim
+        pass
 
     def _repr_mimebundle_(
         self,
@@ -1447,18 +1298,4 @@ class PdfReader(PdfDocCommon):
 
             https://ipython.readthedocs.io/en/stable/config/integrating.html
         """
-        self.stream.seek(0)
-        pdf_data = self.stream.read()
-        data = {
-            "application/pdf": pdf_data,
-        }
-
-        if include is not None:
-            # Filter representations based on include list
-            data = {k: v for k, v in data.items() if k in include}
-
-        if exclude is not None:
-            # Remove representations based on exclude list
-            data = {k: v for k, v in data.items() if k not in exclude}
-
-        return data
+        pass

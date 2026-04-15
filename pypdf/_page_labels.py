@@ -73,55 +73,19 @@ from .generic import (
 
 
 def number2uppercase_roman_numeral(num: int) -> str:
-    roman = [
-        (1000, "M"),
-        (900, "CM"),
-        (500, "D"),
-        (400, "CD"),
-        (100, "C"),
-        (90, "XC"),
-        (50, "L"),
-        (40, "XL"),
-        (10, "X"),
-        (9, "IX"),
-        (5, "V"),
-        (4, "IV"),
-        (1, "I"),
-    ]
-
-    def roman_num(num: int) -> Iterator[str]:
-        for decimal, roman_repr in roman:
-            x, _ = divmod(num, decimal)
-            yield roman_repr * x
-            num -= decimal * x
-            if num <= 0:
-                break
-
-    return "".join(list(roman_num(num)))
+    pass
 
 
 def number2lowercase_roman_numeral(number: int) -> str:
-    return number2uppercase_roman_numeral(number).lower()
+    pass
 
 
 def number2uppercase_letter(number: int) -> str:
-    if number <= 0:
-        raise ValueError("Expecting a positive number")
-    alphabet = [chr(i) for i in range(ord("A"), ord("Z") + 1)]
-    rep = ""
-    while number > 0:
-        remainder = number % 26
-        if remainder == 0:
-            remainder = 26
-        rep = alphabet[remainder - 1] + rep
-        # update
-        number -= remainder
-        number = number // 26
-    return rep
+    pass
 
 
 def number2lowercase_letter(number: int) -> str:
-    return number2uppercase_letter(number).lower()
+    pass
 
 
 def get_label_from_nums(dictionary_object: DictionaryObject, index: int) -> str:
@@ -132,33 +96,7 @@ def get_label_from_nums(dictionary_object: DictionaryObject, index: int) -> str:
     # The keys shall be sorted in numerical order,
     # analogously to the arrangement of keys in a name tree
     # as described in 7.9.6, "Name Trees."
-    nums = cast(ArrayObject, dictionary_object["/Nums"])
-    i = 0
-    value = None
-    start_index = 0
-    while i < len(nums):
-        start_index = nums[i]
-        value = nums[i + 1].get_object()
-        if i + 2 == len(nums):
-            break
-        if nums[i + 2] > index:
-            break
-        i += 2
-    m: dict[Optional[str], Callable[[int], str]] = {
-        None: lambda _: "",
-        "/D": str,
-        "/R": number2uppercase_roman_numeral,
-        "/r": number2lowercase_roman_numeral,
-        "/A": number2uppercase_letter,
-        "/a": number2lowercase_letter,
-    }
-    # if /Nums array is not following the specification or if /Nums is empty
-    if not isinstance(value, dict):
-        return str(index + 1)  # Fallback
-    start = value.get("/St", 1)
-    prefix = value.get("/P", "")
-    mapping_function = m[value.get("/S")]
-    return prefix + mapping_function(index - start_index + start)
+    pass
 
 
 def index2label(reader: PdfCommonDocProtocol, index: int) -> str:
@@ -173,41 +111,7 @@ def index2label(reader: PdfCommonDocProtocol, index: int) -> str:
         The label of the page, e.g. "iv" or "4".
 
     """
-    root = cast(DictionaryObject, reader.root_object)
-    if "/PageLabels" not in root:
-        return str(index + 1)  # Fallback
-    number_tree = cast(DictionaryObject, root["/PageLabels"].get_object())
-    if "/Nums" in number_tree:
-        return get_label_from_nums(number_tree, index)
-    if "/Kids" in number_tree and not isinstance(number_tree["/Kids"], NullObject):
-        # number_tree = {'/Kids': [IndirectObject(7333, 0, 140132998195856), ...]}
-        # Limit maximum depth.
-        level = 0
-        while level < 100:
-            kids = cast(list[DictionaryObject], number_tree["/Kids"])
-            for kid in kids:
-                # kid = {'/Limits': [0, 63], '/Nums': [0, {'/P': 'C1'}, ...]}
-                limits = cast(list[int], kid["/Limits"])
-                if limits[0] <= index <= limits[1]:
-                    if not is_null_or_none(kid.get("/Kids", None)):
-                        # Recursive definition.
-                        level += 1
-                        if level == 100:  # pragma: no cover
-                            raise NotImplementedError(
-                                "Too deep nesting is not supported."
-                            )
-                        number_tree = kid
-                        # Exit the inner `for` loop and continue at the next level with the
-                        # next iteration of the `while` loop.
-                        break
-                    return get_label_from_nums(kid, index)
-            else:
-                # When there are no kids, make sure to exit the `while` loop directly
-                # and continue with the fallback.
-                break
-
-    logger_warning(f"Could not reliably determine page label for {index}.", __name__)
-    return str(index + 1)  # Fallback if neither /Nums nor /Kids is in the number_tree
+    pass
 
 
 def nums_insert(
@@ -226,18 +130,7 @@ def nums_insert(
         nums: Nums array to modify
 
     """
-    if len(nums) % 2 != 0:
-        raise ValueError("A nums like array must have an even number of elements")
-
-    i = len(nums)
-    while i != 0 and key <= nums[i - 2]:
-        i = i - 2
-
-    if i < len(nums) and key == nums[i]:
-        nums[i + 1] = value
-    else:
-        nums.insert(i, key)
-        nums.insert(i + 1, value)
+    pass
 
 
 def nums_clear_range(
@@ -256,15 +149,7 @@ def nums_clear_range(
         nums: Nums array to modify
 
     """
-    if len(nums) % 2 != 0:
-        raise ValueError("A nums like array must have an even number of elements")
-    if page_index_to < key:
-        raise ValueError("page_index_to must be greater or equal than key")
-
-    i = nums.index(key) + 2
-    while i < len(nums) and nums[i] <= page_index_to:
-        nums.pop(i)
-        nums.pop(i)
+    pass
 
 
 def nums_next(
@@ -281,10 +166,4 @@ def nums_next(
         nums: Nums array
 
     """
-    if len(nums) % 2 != 0:
-        raise ValueError("A nums like array must have an even number of elements")
-
-    i = nums.index(key) + 2
-    if i < len(nums):
-        return (nums[i], nums[i + 1])
-    return (None, None)
+    pass

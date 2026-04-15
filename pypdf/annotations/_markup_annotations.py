@@ -29,14 +29,7 @@ Vertex: TypeAlias = tuple[float, float]
 
 
 def _get_bounding_rectangle(vertices: list[Vertex]) -> RectangleObject:
-    x_min, y_min = vertices[0][0], vertices[0][1]
-    x_max, y_max = vertices[0][0], vertices[0][1]
-    for x, y in vertices:
-        x_min = min(x_min, x)
-        y_min = min(y_min, y)
-        x_max = max(x_max, x)
-        y_max = max(y_max, y)
-    return RectangleObject((x_min, y_min, x_max, y_max))
+    pass
 
 
 class MarkupAnnotation(AnnotationDictionary, ABC):

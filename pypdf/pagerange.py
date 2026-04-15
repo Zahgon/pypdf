@@ -88,13 +88,11 @@ class PageRange:
             True, if the ``input`` is a valid PageRange.
 
         """
-        return isinstance(input, (slice, PageRange)) or (
-            isinstance(input, str) and bool(re.match(PAGE_RANGE_RE, input))
-        )
+        pass
 
     def to_slice(self) -> slice:
         """Return the slice equivalent of this page range."""
-        return self._slice
+        pass
 
     def __str__(self) -> str:
         """A string like "1:2:3"."""
@@ -173,28 +171,7 @@ def parse_filename_page_ranges(
         A list of (filename, page_range) pairs.
 
     """
-    pairs: list[tuple[str, PageRange]] = []
-    pdf_filename: Union[str, None] = None
-    did_page_range = False
-    for arg in [*args, None]:
-        if PageRange.valid(arg):
-            if not pdf_filename:
-                raise ValueError(
-                    "The first argument must be a filename, not a page range."
-                )
-
-            assert arg is not None
-            pairs.append((pdf_filename, PageRange(arg)))
-            did_page_range = True
-        else:
-            # New filename or end of list - use the complete previous file?
-            if pdf_filename and not did_page_range:
-                pairs.append((pdf_filename, PAGE_RANGE_ALL))
-
-            assert not isinstance(arg, PageRange), arg
-            pdf_filename = arg
-            did_page_range = False
-    return pairs
+    pass
 
 
 PageRangeSpec = Union[str, PageRange, tuple[int, int], tuple[int, int, int], list[int]]
